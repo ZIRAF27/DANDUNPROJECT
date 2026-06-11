@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For You, My Everything</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #1a0813;
+            --text-primary: #ffffff;
+            --text-secondary: #b59aab;
+            --accent-pink: #dca1b6;
+            --muted: #6e5468;
+            --card-bg: #2a1423;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* --- ANIMASI KELOPAK BUNGA --- */
+        .petal {
+            position: fixed;
+            top: -20px;
+            color: var(--accent-pink);
+            font-size: 14px;
+            pointer-events: none;
+            z-index: 999;
+            animation: fall linear infinite;
+        }
+        @keyframes fall {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(105vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* --- TAMPILAN INTRO (KADO) --- */
+        #intro-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.8s ease;
+        }
+        .gift-box {
+            font-size: 80px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            user-select: none;
+        }
+        .gift-box:hover {
+            transform: scale(1.1);
+        }
+        .tap-text {
+            color: var(--accent-pink);
+            font-size: 14px;
+            margin-top: 20px;
+            letter-spacing: 2px;
+            animation: blink 1.5s infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        /* --- KONTEN UTAMA --- */
+        #main-content {
+            display: none;
+            opacity: 0;
+            transition: opacity 1.5s ease;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 40px 20px 120px 20px;
+            text-align: center;
+        }
+
+        section {
+            margin-bottom: 100px;
+        }
+
+        h1, h2, .script-font {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .subtitle {
+            color: var(--accent-pink);
+            font-size: 14px;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        /* Slide 1 */
+        .main-title {
+            font-size: 36px;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 20px;
+        }
+        .scroll-hint {
+            color: var(--muted);
+            font-size: 12px;
+            letter-spacing: 2px;
+            margin-top: 40px;
+        }
+
+        /* Slide 2: Surat */
+        .love-letter {
+            font-size: 22px;
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+        .letter-body {
+            color: var(--text-secondary);
+            font-size: 15px;
+            line-height: 1.6;
+            text-align: center;
+        }
+        .signature {
+            color: var(--accent-pink);
+            text-align: right;
+            margin-top: 20px;
+            font-size: 16px;
+        }
+
+        /* Slide 3: Grid 6 Alasan (3 Kolom agar pas di layar) */
+        .grid-reasons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .reason-card {
+            background-color: var(--card-bg);
+            padding: 15px 5px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid transparent;
+        }
+        .reason-card:hover { 
+            transform: translateY(-3px); 
+        }
+        /* Efek khusus saat kartu aktif terisi bunga */
+        .reason-card.active {
+            border-color: var(--accent-pink);
+            box-shadow: 0 0 10px rgba(220, 161, 182, 0.3);
+        }
+        .reason-card .icon-slot { 
+            font-size: 18px; 
+            margin-bottom: 8px; 
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Slide 4: Barisan Bunga */
+        .flower-row {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            font-size: 28px;
+            margin: 25px 0 10px 0;
+            min-height: 42px; /* Menjaga layout agar tidak runtuh saat bunga dipindah */
+        }
+        .flower-item {
+            cursor: pointer;
+            transition: all 0.5s ease;
+            display: inline-block;
+            user-select: none;
+        }
+        .flower-item.moved {
+            opacity: 0.1;
+            transform: scale(0.6);
+            pointer-events: none; /* Tidak bisa diklik lagi di bawah */
+        }
+        .hover-hint {
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-style: italic;
+        }
+
+        /* Slide 5: Galeri Foto */
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 25px;
+        }
+        .photo-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .photo-box img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 4px;
+            filter: grayscale(100%);
+            transition: filter 0.5s;
+        }
+        .photo-box img:hover { filter: grayscale(0%); }
+        .photo-caption {
+            margin-top: 6px;
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        /* Slide 6: Outro */
+        .outro-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+        .credit-1 { color: var(--muted); font-size: 12px; margin-top: 50px; }
+        .credit-2 { color: #4a3645; font-size: 10px; margin-top: 5px; }
+
+        /* --- STICKY FLOATING MUSIC PLAYER --- */
+        #music-player {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background-color: var(--card-bg);
+            width: 170px;
+            height: 65px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            z-index: 999;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.8s ease;
+        }
+        #music-player.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .album-art {
+            width: 48px;
+            height: 48px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 4px;
+            background-image: url('cover.jpg'); 
+            background-color: #555;
+        }
+        .music-info {
+            margin-left: 10px;
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .song-title {
+            font-size: 10px;
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .artist {
+            font-size: 8px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+        .progress-container {
+            width: 100%;
+            height: 2px;
+            background-color: rgba(255,255,255,0.1);
+            margin-top: 4px;
+        }
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background-color: var(--accent-pink);
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="bg-music" src="lagu.mp3" loop></audio>
+
+    <div id="intro-overlay">
+        <div class="gift-box" onclick="openGift()">🎁</div>
+        <div class="tap-text">tap to open</div>
+    </div>
+
+    <div id="main-content">
+        
+        <section>
+            <p class="subtitle">a love letter in bloom</p>
+            <h1 class="main-title">For You,<br>My Everything</h1>
+            <p style="color: var(--text-secondary); font-size: 14px;">Every petal holds a whisper of how much you mean to me</p>
+            <p style="margin-top: 25px; font-size: 20px;">🌸</p>
+            <p class="scroll-hint">SCROLL TO DISCOVER ↓</p>
+        </section>
+
+        <section>
+            <p style="font-size: 18px; margin-bottom: 10px;">🌸 🌸 🌸</p>
+            <p class="subtitle">from my heart</p>
+            <h2 class="love-letter">You are my wildest dream come true.</h2>
+            <p class="letter-body">
+                In a world full of ordinary moments, you are the extraordinary one. The way you laugh, the way you care, the way you simply exist — it fills every corner of my world with something I never knew I needed.<br><br>
+                These flowers are not enough. No words ever could be. But they carry every unspoken feeling I hold for you, pressed between their petals like tiny love letters waiting to be found.
+            </p>
+            <div class="signature">— Always yours 🌹</div>
+        </section>
+
+        <section>
+            <p class="subtitle" style="color: var(--muted)">a thousand reasons why</p>
+            <h2 style="font-size: 26px;">Why I Love You</h2>
+            <p style="font-size: 11px; color: var(--accent-pink); margin-top: 5px;">(Tap the cards to match the flowers)</p>
+            
+            <div class="grid-reasons">
+                <div class="reason-card" id="card-smile" onclick="moveFlower('smile')">
+                    <div class="icon-slot" id="slot-smile">✦</div>
+                    Your Smile
+                </div>
+                <div class="reason-card" id="card-soul" onclick="moveFlower('soul')">
+                    <div class="icon-slot" id="slot-soul">✦</div>
+                    Your Soul
+                </div>
+                <div class="reason-card" id="card-kindness" onclick="moveFlower('kindness')">
+                    <div class="icon-slot" id="slot-kindness">✦</div>
+                    Your Kindness
+                </div>
+                <div class="reason-card" id="card-laughter" onclick="moveFlower('laughter')">
+                    <div class="icon-slot" id="slot-laughter">✦</div>
+                    Your Laughter
+                </div>
+                <div class="reason-card" id="card-strength" onclick="moveFlower('strength')">
+                    <div class="icon-slot" id="slot-strength">✦</div>
+                    Your Strength
+                </div>
+                <div class="reason-card" id="card-simply" onclick="moveFlower('simply')">
+                    <div class="icon-slot" id="slot-simply">✦</div>
+                    Simply You
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <p class="subtitle" style="color: var(--muted)">our secret garden</p>
+            <h2 style="font-size: 24px;">A Garden Grown<br>Just For You</h2>
+            <div class="flower-row">
+                <div class="flower-item" id="fl-laughter" title="Cinta Sejati">🌹</div>
+                <div class="flower-item" id="fl-smile" title="Kebahagiaan">🌸</div>
+                <div class="flower-item" id="fl-strength" title="Ketulusan">🌷</div>
+                <div class="flower-item" id="fl-soul" title="Keindahan">🌺</div>
+                <div class="flower-item" id="fl-simply" title="Keceriaan">🌼</div>
+                <div class="flower-item" id="fl-kindness" title="Kesetiaan">🌻</div>
+            </div>
+            <p class="hover-hint">tap the cards above to see flowers bloom inside them</p>
+        </section>
+
+        <section>
+            <p class="subtitle" style="color: var(--muted)">captured in time</p>
+            <h2 style="font-size: 24px;">Your Beautiful<br>Pictures</h2>
+            
+            <div class="photo-grid">
+                <div class="photo-box">
+                    <img src="gamqbar1.jpg"
+                " alt="gambar1">
+                    <p class="photo-caption">you</p>
+                </div>
+                <div class="photo-box">
+                    <img src="gamqbar2.jpg" alt="Foto 2">
+                    <p class="photo-caption">are</p>
+                </div>
+                <div class="photo-box">
+                    <img src="gamqbar3.jpg" alt="Foto 3">
+                    <p class="photo-caption">so</p>
+                </div>
+                <div class="photo-box">
+                    <img src="gamqbar4.jpg" alt="Foto 4">
+                    <p class="photo-caption">beautiful</p>
+                </div>
+            </div>
+        </section>
+
+        <section style="margin-bottom: 0;">
+            <p style="font-size: 18px; margin-bottom: 15px;">🌸 🌹 🌸</p>
+            <p class="subtitle">always & forever</p>
+            <h2 class="outro-title">You Are Loved<br>Beyond Words</h2>
+            <p class="letter-body" style="font-size: 14px;">
+                No matter where life takes us, know that somewhere in the universe, there is a garden blooming with every feeling I have ever held for you. You deserve the world. You deserve all the flowers. You deserve everything.
+            </p>
+            
+            <p class="credit-1">made with love, just for you 🌸</p>
+            <p class="credit-2">crafted with love & petals ✨</p>
+        </section>
+
+    </div>
+
+    <div id="music-player">
+        <div class="album-art"></div>
+        <div class="music-info">
+            <div class="song-title">Sampai Jadi Debu</div>
+            <div class="artist">BANDA NEIRA</div>
+            <div class="progress-container">
+                <div class="progress-bar" id="music-progress"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Fungsi Efek Kelopak Bunga Gugur Otomatis
+        function createPetal() {
+            const petals = ['🌸', '🌹', '✨', '💖'];
+            const petal = document.createElement('div');
+            petal.classList.add('petal');
+            petal.innerText = petals[Math.floor(Math.random() * petals.length)];
+            petal.style.left = Math.random() * 100 + 'vw';
+            petal.style.animationDuration = Math.random() * 3 + 3 + 's';
+            petal.style.fontSize = Math.random() * 10 + 10 + 'px';
+            document.body.appendChild(petal);
+
+            setTimeout(() => {
+                petal.remove();
+            }, 6000);
+        }
+
+        setInterval(createPetal, 400);
+
+        // LOGIKA BARU: Fungsi memindahkan bunga ke dalam kolom secara presisi saat kolom ditekan
+        function moveFlower(type) {
+            const card = document.getElementById('card-' + type);
+            const slot = document.getElementById('slot-' + type);
+            const flower = document.getElementById('fl-' + type);
+
+            if (flower && !flower.classList.contains('moved')) {
+                // Ambil simbol emoji bunganya
+                const flowerEmoji = flower.innerText;
+                
+                // Masukkan bunga ke slot ikon di dalam kartu dengan efek animasi
+                slot.innerText = flowerEmoji;
+                slot.style.transform = "scale(1.3)";
+                card.classList.add('active');
+                
+                // Samarkan bunga yang ada di barisan bawah bawah agar terlihat seperti sudah "pindah"
+                flower.classList.add('moved');
+            }
+        }
+
+        // Fungsi ketika Kado dikiik
+        function openGift() {
+            const intro = document.getElementById('intro-overlay');
+            const mainContent = document.getElementById('main-content');
+            const player = document.getElementById('music-player');
+            const music = document.getElementById('bg-music');
+            const progressBar = document.getElementById('music-progress');
+
+            // Putar Musik Otomatis & jalankan progress bar asli
+            music.play().then(() => {
+                music.addEventListener('timeupdate', () => {
+                    const percentage = (music.currentTime / music.duration) * 100;
+                    progressBar.style.width = percentage + '%';
+                });
+            }).catch(error => console.log("Autoplay dicegah browser."));
+
+            intro.style.opacity = '0';
+            
+            setTimeout(() => {
+                intro.style.display = 'none';
+                mainContent.style.display = 'block';
+                
+                setTimeout(() => {
+                    mainContent.style.opacity = '1';
+                    player.classList.add('show');
+                }, 50);
+            }, 800);
+        }
+    </script>
+</body>
+</html>
